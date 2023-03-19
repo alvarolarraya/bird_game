@@ -13,6 +13,6 @@
     width:100%;
 }
 
-#bird,#background,#empty_heart,#heart,#wart,#witch {
+img {
     display: none;
 }

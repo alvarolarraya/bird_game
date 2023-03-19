@@ -1,12 +1,13 @@
 export class Witch{
+    life = 100;
     rescalingFactor = 50;
     y = 10;
     verticalVariation = 0;
     verticalVariationFactor = 1.5;
     maxWartGroupRespawnTime = 240;
     minWartGroupRespawnTime = 30;
-    minWartGroupSize = 3;
-    maxWartGroupSize = 5;
+    minWartGroupSize = 2;
+    maxWartGroupSize = 4;
     actualTime = 0;
     wartGroupSize = 3;
     constructor(game){
@@ -39,6 +40,8 @@ export class Witch{
         }
         this.warts.forEach((wart, index)=>{
             wart.update();
+            if(wart.x+wart.width<0)
+                this.warts.splice(index,1);
         })
         this.actualTime++;
     }
@@ -50,6 +53,22 @@ export class Witch{
         // to visualize colision area
         // context.strokeRect(this.x,this.y,this.width,this.height);
         context.drawImage(this.image,this.x,this.y,this.width,this.height);
+        // health bar
+        if(this.life > 70){
+            context.fillStyle="green"
+        }else if(this.life > 40){
+            context.fillStyle="gold"
+        }else if(this.life > 20){
+          context.fillStyle="orange";
+        }else{
+          context.fillStyle="red";
+        }
+        context.fillRect(this.game.width*25/100, this.game.height-6*this.game.height/100, this.game.width*50*this.life/100/100, 
+                        this.game.height*4/100);
+        context.fillStyle="white";
+        context.fillRect(this.game.width*25/100+this.game.width*50*this.life/100/100, this.game.height-6*this.game.height/100,
+                        this.game.width*50*(100-this.life)/100/100, this.game.height*4/100);
+        context.fillStyle="black";
     }
 
     calculateNextWartRespawnTime(){
@@ -83,6 +102,22 @@ export class Witch{
                 return true;
         return false;
     }
+
+    checkEnemiesHit(syringes){
+        syringes.forEach((syringe, syringeIndex)=>{
+            this.warts.forEach((wart, wartIndex)=>{
+                if(this.haveCollided(wart,syringe))
+                {
+                    this.warts.splice(wartIndex,1);
+                    syringes.splice(syringeIndex,1);
+                } 
+            });
+            if(this.haveCollided(this,syringe) && this.life>0){
+                this.life-=5;
+                syringes.splice(syringeIndex,1);
+            }
+        });
+    }
 }
 
 export class Wart{
@@ -93,7 +128,7 @@ export class Wart{
         this.dstVerticalPosition = dstVerticalPosition;
         this.game = game;
         this.witch = witch;
-        this.width = this.game.width*10/100;
+        this.width = this.game.width*8/100;
         this.height = this.rescalingFactor*this.width/100;
         this.x = this.witch.x+this.witch.width/3;
         this.y = this.witch.y+this.witch.height/1.5-this.height;
